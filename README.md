@@ -1,7 +1,7 @@
 # go-graphite-client [![Build Status](https://travis-ci.org/jtaczanowski/go-graphite-client.png?branch=master)](https://travis-ci.org/jtaczanowski/go-graphite-client) [![Coverage Status](https://coveralls.io/repos/github/jtaczanowski/go-graphite-client/badge.svg?branch=master)](https://coveralls.io/github/jtaczanowski/go-graphite-client?branch=master)
 go-graphite-client - Simple Golang graphite client.
 
-Example usage (also included in example catalog)
+Example usage (also present in `example_text.go`)
 ```go
 package main
 

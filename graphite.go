@@ -1,3 +1,4 @@
+// Simple Graphite client
 package graphite
 
 import (

@@ -1,4 +1,4 @@
-package main
+package graphite_test
 
 import (
 	"log"
