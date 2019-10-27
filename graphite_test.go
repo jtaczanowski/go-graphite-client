@@ -29,7 +29,7 @@ func TestSentMetricsOverTCP(t *testing.T) {
 	}()
 
 	// start tcp server
-	listener, err := net.Listen("tcp", ":2003")
+	listener, err := net.Listen("tcp", "localhost:2003")
 	if err != nil {
 		t.Fatal(err)
 	}
