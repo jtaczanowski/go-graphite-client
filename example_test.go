@@ -1,9 +1,13 @@
 package main
 
-import graphite "github.com/jtaczanowski/go-graphite-client"
+import (
+	"log"
 
-func main() {
-	graphiteClient := graphite.NewGraphiteClient("localhost", 2003, "prefix", "tcp")
+	"github.com/jtaczanowski/go-graphite-client"
+)
+
+func Example() {
+	graphiteClient := graphite.NewClient("localhost", 2003, "metrics.prefix", "tcp")
 
 	// metrics
 	exampleMetric1 := map[string]float64{"test_metric": 1234.1234}
@@ -12,5 +16,7 @@ func main() {
 	metricsToSend := []map[string]float64{exampleMetric1, exampleMetric2}
 
 	// graphiteClient.SendData(data []map[string]float64) error - this method receives a list of metrics as an argument
-	graphiteClient.SendData(metricsToSend)
+	if err := graphiteClient.SendData(metricsToSend); err != nil {
+		log.Printf("Error sending metrics: %v", err)
+	}
 }

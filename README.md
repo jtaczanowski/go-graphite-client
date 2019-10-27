@@ -5,7 +5,11 @@ Example usage (also included in example catalog)
 ```go
 package main
 
-import graphite "github.com/jtaczanowski/go-graphite-client"
+import (
+	"log"
+
+	graphite "github.com/jtaczanowski/go-graphite-client"
+)
 
 func main() {
 	graphiteClient := graphite.NewGraphiteClient("localhost", 2003, "metrics.prefix", "tcp")
@@ -17,6 +21,8 @@ func main() {
 	metricsToSend := []map[string]float64{exampleMetric1, exampleMetric2}
 
 	// graphiteClient.SendData(data []map[string]float64) error - this method receives a list of metrics as an argument
-	graphiteClient.SendData(metricsToSend)
+	if err := graphiteClient.SendData(metricsToSend); err != nil {
+		log.Printf("Error sending metrics: %v", err)
+	}
 }
 ```
