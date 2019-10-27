@@ -10,17 +10,17 @@ import (
 
 var timeNow = time.Now
 
-// GraphiteClient - struct with graphite connection settings
-type GraphiteClient struct {
+// Client - struct with Graphite connection settings
+type Client struct {
 	host     string
 	port     int
 	prefix   string
 	protocol string
 }
 
-// NewGraphiteClient - returns new NewGraphiteClient
-func NewGraphiteClient(Host string, Port int, Prefix string, Protocol string) *GraphiteClient {
-	return &GraphiteClient{
+// NewClient - returns new Client
+func NewClient(Host string, Port int, Prefix string, Protocol string) *Client {
+	return &Client{
 		host:     Host,
 		port:     Port,
 		prefix:   Prefix,
@@ -28,23 +28,24 @@ func NewGraphiteClient(Host string, Port int, Prefix string, Protocol string) *G
 	}
 }
 
-// SentData - pushes data to graphite server. Default connect timeout is set to 3s
-// SentData receives as argument []map[string]int64 where string is metric name, float64 is metric value
-// example: map[string]float64{"test": 1234.1234}
-func (g *GraphiteClient) SendData(data []map[string]float64) error {
-	dataToSent := g.prepareGraphiteData(data)
+// SentData - pushes data to Graphite server. Default connect timeout is set to 3s
+//
+// SentData receives as argument []map[string]int64 where string is metric name, float64 is metric value, example:
+//   map[string]float64{"test": 1234.1234}
+func (g *Client) SendData(data []map[string]float64) error {
+	dataToSent := g.prepareData(data)
 	conn, err := net.DialTimeout(g.protocol, g.host+":"+strconv.Itoa(g.port), time.Second*3)
 	if err != nil {
 		return err
 	}
 	defer conn.Close()
 	for _, str := range dataToSent {
-		conn.Write([]byte(str))
+		_, _ = conn.Write([]byte(str))
 	}
 	return nil
 }
 
-func (g *GraphiteClient) prepareGraphiteData(data []map[string]float64) []string {
+func (g *Client) prepareData(data []map[string]float64) []string {
 	dataToGraphite := make([]string, 0)
 	for _, metric := range data {
 		for metricName, metricVal := range metric {

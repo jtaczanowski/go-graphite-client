@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	graphiteClient := graphite.NewGraphiteClient("localhost", 2003, "metrics.prefix", "tcp")
+	graphiteClient := graphite.NewClient("localhost", 2003, "metrics.prefix", "tcp")
 
 	// metrics
 	exampleMetric1 := map[string]float64{"test_metric": 1234.1234}
