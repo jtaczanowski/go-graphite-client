@@ -20,7 +20,7 @@ func TestSentMetricsOverTCP(t *testing.T) {
 
 	// create graphite client and sent metrics in separate gorutine
 	go func() {
-		graphiteClient := NewGraphiteClient("localhost", 2003, "prefix", "tcp")
+		graphiteClient := NewClient("localhost", 2003, "prefix", "tcp")
 		listMetrics := make([]map[string]float64, 0)
 
 		listMetrics = append(listMetrics, map[string]float64{"test": 1234.1234})
@@ -29,7 +29,7 @@ func TestSentMetricsOverTCP(t *testing.T) {
 	}()
 
 	// start tcp server
-	listener, err := net.Listen("tcp", ":2003")
+	listener, err := net.Listen("tcp", "localhost:2003")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -78,7 +78,7 @@ func TestSentMetricsOverUDP(t *testing.T) {
 	}()
 
 	// create graphite Client and sent two metrics
-	graphiteClient := NewGraphiteClient("localhost", 2003, "prefix", "udp")
+	graphiteClient := NewClient("localhost", 2003, "prefix", "udp")
 	listMetrics := make([]map[string]float64, 0)
 	listMetrics = append(listMetrics, map[string]float64{"test": 1234.1234})
 	listMetrics = append(listMetrics, map[string]float64{"test2": 12345.12345})
