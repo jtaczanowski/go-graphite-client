@@ -1,6 +1,6 @@
 language: go
 go: 
- - release
+ - master
 
 before_install:
   - go get github.com/mattn/goveralls
