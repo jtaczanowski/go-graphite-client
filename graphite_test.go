@@ -17,47 +17,46 @@ func init() {
 // Below init function
 func TestSentMetricsOverTCP(t *testing.T) {
 	exceptedMessage := "prefix.test 1234.123400 1548015620\nprefix.test2 12345.123450 1548015620\n"
-
-	// create graphite client and sent metrics in separate gorutine
+	receivedMessage := make(chan string, 1)
 	go func() {
-		graphiteClient := NewClient("localhost", 2003, "prefix", "tcp")
-		listMetrics := make([]map[string]float64, 0)
-
-		listMetrics = append(listMetrics, map[string]float64{"test": 1234.1234})
-		listMetrics = append(listMetrics, map[string]float64{"test2": 12345.12345})
-		graphiteClient.SendData(listMetrics)
-	}()
-
-	// start tcp server
-	listener, err := net.Listen("tcp", "localhost:2003")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer listener.Close()
-	for {
-		conn, err := listener.Accept()
-		defer conn.Close()
-		if err != nil {
-			return
-		}
-		defer conn.Close()
-
-		buf, err := ioutil.ReadAll(conn)
+		// start tcp server
+		listener, err := net.Listen("tcp", "localhost:2003")
 		if err != nil {
 			t.Fatal(err)
 		}
+		defer listener.Close()
+		for {
+			conn, err := listener.Accept()
+			defer conn.Close()
+			if err != nil {
+				return
+			}
+			defer conn.Close()
 
-		//fmt.Println(string(buf[:]))
-		if msg := string(buf[:]); msg != exceptedMessage {
-			t.Fatalf("Unexpected message:\nGot:\t\t%s\nExpected:\t%s\n", msg, exceptedMessage)
+			buf, err := ioutil.ReadAll(conn)
+			if err != nil {
+				t.Fatal(err)
+			}
+			receivedMessage <- string(buf[:])
 		}
-		return
+	}()
+	// create graphite client and sent metrics in separate gorutine
+	graphiteClient := NewClient("localhost", 2003, "prefix", "tcp")
+	listMetrics := make([]map[string]float64, 0)
+
+	listMetrics = append(listMetrics, map[string]float64{"test": 1234.1234})
+	listMetrics = append(listMetrics, map[string]float64{"test2": 12345.12345})
+	graphiteClient.SendData(listMetrics)
+
+	if msg := <-receivedMessage; msg != exceptedMessage {
+		t.Fatalf("Unexpected message:\nGot:\t\t%s\nExpected:\t%s\n", msg, exceptedMessage)
 	}
 }
 
 func TestSentMetricsOverUDP(t *testing.T) {
-	messageExcepted := "prefix.test 1234.123400 1548015620\nprefix.test2 12345.123450 1548015620\n"
-	messageReceived := ""
+	exceptedMessage1 := "prefix.test 1234.123400 1548015620\n"
+	exceptedMessage2 := "prefix.test2 12345.123450 1548015620\n"
+	receivedMessage := make(chan string, 2)
 
 	// start UDP server
 	listener, err := net.ListenPacket("udp", ":2003")
@@ -73,7 +72,7 @@ func TestSentMetricsOverUDP(t *testing.T) {
 			}
 
 			//fmt.Println(string(buf[:n]))
-			messageReceived = messageReceived + string(buf[:n])
+			receivedMessage <- string(buf[:n])
 		}
 	}()
 
@@ -84,8 +83,10 @@ func TestSentMetricsOverUDP(t *testing.T) {
 	listMetrics = append(listMetrics, map[string]float64{"test2": 12345.12345})
 	graphiteClient.SendData(listMetrics)
 
-	time.Sleep(time.Millisecond * 100)
-	if messageExcepted != messageReceived {
-		t.Fatalf("Unexpected message:\nGot:\t\t%s\nExpected:\t%s\n", messageReceived, messageExcepted)
+	if msg := <-receivedMessage; msg != exceptedMessage1 {
+		t.Fatalf("Unexpected message:\nGot:\t\t%s\nExpected:\t%s\n", msg, exceptedMessage1)
+	}
+	if msg := <-receivedMessage; msg != exceptedMessage2 {
+		t.Fatalf("Unexpected message:\nGot:\t\t%s\nExpected:\t%s\n", msg, exceptedMessage2)
 	}
 }
