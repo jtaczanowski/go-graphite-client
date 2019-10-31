@@ -31,9 +31,15 @@ func NewClient(Host string, Port int, Prefix string, Protocol string) *Client {
 	}
 }
 
-// SendData - creates new connection to Graphite server and pushes batch of metrics in this single connection. Default connect timeout is set to 3s.
+// SendData - creates new connection to Graphite server and
+// pushes provided batch of metrics in this single connection.
+// Default connect timeout is set to 3s.
+// Returns error in case of problems establishing or closing the connection
+// but no error in case of problems sending data trough the connection
+// (which should not be a problem with such short-lived connections).
 //
-// SendData receives as argument map[string]int64 where string is metric name, float64 is metric value, example:
+// SendData receives as argument map[string]int64 where string is metric name,
+// float64 is metric value, example:
 //   map[string]float64{"test": 1234.1234, "test": 1234.1234}
 func (g *Client) SendData(data map[string]float64) error {
 	dataToSent := g.prepareData(data)
@@ -44,11 +50,13 @@ func (g *Client) SendData(data map[string]float64) error {
 	if err != nil {
 		return err
 	}
-	defer conn.Close()
+
 	for _, str := range dataToSent {
 		_, _ = conn.Write([]byte(str))
 	}
-	return nil
+	// it's safe to close connection here because
+	// we are not exiting the function elsewhere after connection is open
+	return conn.Close()
 }
 
 func (g *Client) prepareData(data map[string]float64) []string {
