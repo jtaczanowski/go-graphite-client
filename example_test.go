@@ -15,8 +15,19 @@ func Example() {
 		"test_metric2": 12345.12345,
 	}
 
-	// graphiteClient.SendData(data map[string]float64) error - this method receives a map of metrics as an argument
+	// append metrics from function which returns map[string]float64 as well
+	for k, v := range metricsGenerator() {
+		metricsMap[k] = v
+	}
+
+	// graphiteClient.SendData(data map[string]float64) error - this method expects a map of metrics as an argument
 	if err := graphiteClient.SendData(metricsMap); err != nil {
 		log.Printf("Error sending metrics: %v", err)
+	}
+}
+
+func metricsGenerator() map[string]float64 {
+	return map[string]float64{
+		"test_metric4": 3.14159265359,
 	}
 }
