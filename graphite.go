@@ -28,9 +28,9 @@ func NewClient(Host string, Port int, Prefix string, Protocol string) *Client {
 	}
 }
 
-// SentData - pushes data to Graphite server. Default connect timeout is set to 3s
+// SendData - creates new connection to Graphite server  and pushes batch of metrics in this single connection. Default connect timeout is set to 3s.
 //
-// SentData receives as argument []map[string]int64 where string is metric name, float64 is metric value, example:
+// SendData receives as argument []map[string]int64 where string is metric name, float64 is metric value, example:
 //   map[string]float64{"test": 1234.1234}
 func (g *Client) SendData(data []map[string]float64) error {
 	dataToSent := g.prepareData(data)
