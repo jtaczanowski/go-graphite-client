@@ -1,9 +1,13 @@
 # go-graphite-client [![Build Status](https://travis-ci.org/jtaczanowski/go-graphite-client.png?branch=master)](https://travis-ci.org/jtaczanowski/go-graphite-client) [![Coverage Status](https://coveralls.io/repos/github/jtaczanowski/go-graphite-client/badge.svg?branch=master)](https://coveralls.io/github/jtaczanowski/go-graphite-client?branch=master)
+
 go-graphite-client - Simple Golang Graphite client which allows sending batches of metrics in single connection.
 
-The optimal use of the library is to collect all the metrics in ```[]map[string]float64``` and after that pass it to SendData() method. SendData() method creates new connection to Graphite server and pushes all metric in **single** connection.
+The optimal use of the library is to collect set of metrics for current minute in single ```map[string]float64```
+and after that pass it to `Client.SendData()` method.
+`Client.SendData()` method creates a new connection to Graphite server **every time it's called**
+and pushes all metric trough it.
 
-Example usage (also present in `example_text.go`)
+Example usage (taken from `example_text.go`)
 ```go
 package main
 
@@ -13,19 +17,30 @@ import (
 	graphite "github.com/jtaczanowski/go-graphite-client"
 )
 
-func main() {
+func Example() {
 	graphiteClient := graphite.NewClient("localhost", 2003, "metrics.prefix", "tcp")
 
-	// metrics
-	exampleMetric1 := map[string]float64{"test_metric": 1234.1234}
-	exampleMetric2 := map[string]float64{"test_metric2": 12345.12345}
-	// list of the metrics
-	metricsToSend := []map[string]float64{exampleMetric1, exampleMetric2}
+	// metrics map
+	metricsMap := map[string]float64{
+		"test_metric":  1234.1234,
+		"test_metric2": 12345.12345,
+	}
 
-	// graphiteClient.SendData(data []map[string]float64) error - this method receives a list of metrics as an argument
-	// 
-	if err := graphiteClient.SendData(metricsToSend); err != nil {
+	// append metrics from function which returns map[string]float64 as well
+	for k, v := range metricsGenerator() {
+		metricsMap[k] = v
+	}
+
+	// graphiteClient.SendData(data map[string]float64) error - this method expects a map of metrics as an argument
+	if err := graphiteClient.SendData(metricsMap); err != nil {
 		log.Printf("Error sending metrics: %v", err)
 	}
 }
+
+func metricsGenerator() map[string]float64 {
+	return map[string]float64{
+		"test_metric4": 3.14159265359,
+	}
+}
+
 ```
