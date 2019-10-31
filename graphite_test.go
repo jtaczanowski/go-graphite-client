@@ -18,16 +18,18 @@ func init() {
 func TestSentMetricsOverTCP(t *testing.T) {
 	exceptedMessage := "prefix.test 1234.123400 1548015620\nprefix.test2 12345.123450 1548015620\n"
 	receivedMessage := make(chan string, 1)
+	serverStarted := make(chan string, 1)
+
 	go func() {
 		// start tcp server
-		listener, err := net.Listen("tcp", "localhost:2003")
+		listener, err := net.Listen("tcp", "127.0.0.1:2003")
 		if err != nil {
 			t.Fatal(err)
 		}
+		serverStarted <- "started"
 		defer listener.Close()
 		for {
 			conn, err := listener.Accept()
-			defer conn.Close()
 			if err != nil {
 				return
 			}
@@ -40,8 +42,10 @@ func TestSentMetricsOverTCP(t *testing.T) {
 			receivedMessage <- string(buf[:])
 		}
 	}()
+	<-serverStarted
+
 	// create graphite client and sent metrics in separate gorutine
-	graphiteClient := NewClient("localhost", 2003, "prefix", "tcp")
+	graphiteClient := NewClient("127.0.0.1", 2003, "prefix", "tcp")
 	listMetrics := make([]map[string]float64, 0)
 
 	listMetrics = append(listMetrics, map[string]float64{"test": 1234.1234})
@@ -57,27 +61,29 @@ func TestSentMetricsOverUDP(t *testing.T) {
 	exceptedMessage1 := "prefix.test 1234.123400 1548015620\n"
 	exceptedMessage2 := "prefix.test2 12345.123450 1548015620\n"
 	receivedMessage := make(chan string, 2)
+	serverStarted := make(chan string, 1)
 
-	// start UDP server
-	listener, err := net.ListenPacket("udp", ":2003")
-	if err != nil {
-		t.Fatal(err)
-	}
 	go func() {
+		// start UDP server
+		listener, err := net.ListenPacket("udp", "127.0.0.1:2003")
+		if err != nil {
+			t.Fatal(err)
+		}
+		serverStarted <- "started"
+		defer listener.Close()
 		for {
 			buf := make([]byte, 1024)
 			n, _, err := listener.ReadFrom(buf)
 			if err != nil {
 				t.Fatal(err)
 			}
-
-			//fmt.Println(string(buf[:n]))
 			receivedMessage <- string(buf[:n])
 		}
 	}()
+	<-serverStarted
 
 	// create graphite Client and sent two metrics
-	graphiteClient := NewClient("localhost", 2003, "prefix", "udp")
+	graphiteClient := NewClient("127.0.0.1", 2003, "prefix", "udp")
 	listMetrics := make([]map[string]float64, 0)
 	listMetrics = append(listMetrics, map[string]float64{"test": 1234.1234})
 	listMetrics = append(listMetrics, map[string]float64{"test2": 12345.12345})
