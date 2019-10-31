@@ -28,11 +28,11 @@ func NewClient(Host string, Port int, Prefix string, Protocol string) *Client {
 	}
 }
 
-// SendData - creates new connection to Graphite server  and pushes batch of metrics in this single connection. Default connect timeout is set to 3s.
+// SendData - creates new connection to Graphite server and pushes batch of metrics in this single connection. Default connect timeout is set to 3s.
 //
-// SendData receives as argument []map[string]int64 where string is metric name, float64 is metric value, example:
-//   map[string]float64{"test": 1234.1234}
-func (g *Client) SendData(data []map[string]float64) error {
+// SendData receives as argument map[string]int64 where string is metric name, float64 is metric value, example:
+//   map[string]float64{"test": 1234.1234, "test": 1234.1234}
+func (g *Client) SendData(data map[string]float64) error {
 	dataToSent := g.prepareData(data)
 	conn, err := net.DialTimeout(g.protocol, g.host+":"+strconv.Itoa(g.port), time.Second*3)
 	if err != nil {
@@ -45,12 +45,10 @@ func (g *Client) SendData(data []map[string]float64) error {
 	return nil
 }
 
-func (g *Client) prepareData(data []map[string]float64) []string {
+func (g *Client) prepareData(data map[string]float64) []string {
 	dataToGraphite := make([]string, 0)
-	for _, metric := range data {
-		for metricName, metricVal := range metric {
-			dataToGraphite = append(dataToGraphite, fmt.Sprintf("%s.%s %f %d\n", g.prefix, metricName, metricVal, timeNow().Unix()))
-		}
+	for metricName, metricVal := range data {
+		dataToGraphite = append(dataToGraphite, fmt.Sprintf("%s.%s %f %d\n", g.prefix, metricName, metricVal, timeNow().Unix()))
 	}
 	return dataToGraphite
 }

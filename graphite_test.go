@@ -46,11 +46,11 @@ func TestSentMetricsOverTCP(t *testing.T) {
 
 	// create graphite client and sent metrics in separate gorutine
 	graphiteClient := NewClient("127.0.0.1", 2003, "prefix", "tcp")
-	listMetrics := make([]map[string]float64, 0)
-
-	listMetrics = append(listMetrics, map[string]float64{"test": 1234.1234})
-	listMetrics = append(listMetrics, map[string]float64{"test2": 12345.12345})
-	graphiteClient.SendData(listMetrics)
+	metricsMap := map[string]float64{
+		"test":  1234.1234,
+		"test2": 12345.12345,
+	}
+	graphiteClient.SendData(metricsMap)
 
 	if msg := <-receivedMessage; msg != exceptedMessage {
 		t.Fatalf("Unexpected message:\nGot:\t\t%s\nExpected:\t%s\n", msg, exceptedMessage)
@@ -84,10 +84,11 @@ func TestSentMetricsOverUDP(t *testing.T) {
 
 	// create graphite Client and sent two metrics
 	graphiteClient := NewClient("127.0.0.1", 2003, "prefix", "udp")
-	listMetrics := make([]map[string]float64, 0)
-	listMetrics = append(listMetrics, map[string]float64{"test": 1234.1234})
-	listMetrics = append(listMetrics, map[string]float64{"test2": 12345.12345})
-	graphiteClient.SendData(listMetrics)
+	metricsMap := map[string]float64{
+		"test":  1234.1234,
+		"test2": 12345.12345,
+	}
+	graphiteClient.SendData(metricsMap)
 
 	if msg := <-receivedMessage; msg != exceptedMessage1 {
 		t.Fatalf("Unexpected message:\nGot:\t\t%s\nExpected:\t%s\n", msg, exceptedMessage1)
