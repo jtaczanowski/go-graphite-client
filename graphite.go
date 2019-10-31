@@ -10,12 +10,15 @@ import (
 
 var timeNow = time.Now
 
+const defaultTimeout = 3 * time.Second
+
 // Client - struct with Graphite connection settings
 type Client struct {
 	host     string
 	port     int
 	prefix   string
 	protocol string
+	timeOut  time.Duration
 }
 
 // NewClient - returns new Client
@@ -34,7 +37,10 @@ func NewClient(Host string, Port int, Prefix string, Protocol string) *Client {
 //   map[string]float64{"test": 1234.1234, "test": 1234.1234}
 func (g *Client) SendData(data map[string]float64) error {
 	dataToSent := g.prepareData(data)
-	conn, err := net.DialTimeout(g.protocol, g.host+":"+strconv.Itoa(g.port), time.Second*3)
+	if g.timeOut == 0 {
+		g.timeOut = defaultTimeout
+	}
+	conn, err := net.DialTimeout(g.protocol, g.host+":"+strconv.Itoa(g.port), g.timeOut)
 	if err != nil {
 		return err
 	}
