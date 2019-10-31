@@ -42,7 +42,6 @@ func NewClient(Host string, Port int, Prefix string, Protocol string) *Client {
 // float64 is metric value, example:
 //   map[string]float64{"test": 1234.1234, "test": 1234.1234}
 func (g *Client) SendData(data map[string]float64) error {
-	dataToSent := g.prepareData(data)
 	if g.timeOut == 0 {
 		g.timeOut = defaultTimeout
 	}
@@ -51,6 +50,7 @@ func (g *Client) SendData(data map[string]float64) error {
 		return err
 	}
 
+	dataToSent := g.prepareData(data)
 	for _, str := range dataToSent {
 		_, _ = conn.Write([]byte(str))
 	}
