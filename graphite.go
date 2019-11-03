@@ -1,4 +1,4 @@
-// Simple Graphite client
+// Package graphite provides simple Graphite client
 package graphite
 
 import (

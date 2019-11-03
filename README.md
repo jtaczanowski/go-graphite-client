@@ -1,4 +1,4 @@
-# go-graphite-client [![Build Status](https://travis-ci.org/jtaczanowski/go-graphite-client.png?branch=master)](https://travis-ci.org/jtaczanowski/go-graphite-client) [![Coverage Status](https://coveralls.io/repos/github/jtaczanowski/go-graphite-client/badge.svg?branch=master)](https://coveralls.io/github/jtaczanowski/go-graphite-client?branch=master)
+# go-graphite-client [![Build Status](https://travis-ci.org/jtaczanowski/go-graphite-client.png?branch=master)](https://travis-ci.org/jtaczanowski/go-graphite-client) [![Coverage Status](https://coveralls.io/repos/github/jtaczanowski/go-graphite-client/badge.svg?branch=master)](https://coveralls.io/github/jtaczanowski/go-graphite-client?branch=master) [![Go Report Card](https://goreportcard.com/badge/github.com/umputun/rlb-stats)](https://goreportcard.com/report/github.com/umputun/rlb-stats)
 
 go-graphite-client - Simple Golang Graphite client which allows sending batches of metrics in single connection.
 
