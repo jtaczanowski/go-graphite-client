@@ -47,7 +47,7 @@ func (g *Client) SendData(data map[string]float64) error {
 		return err
 	}
 
-	dataToSent := g.prepareData(data)
+	dataToSent := g.prepareData(data, timeNow().Unix())
 	for _, str := range dataToSent {
 		_, err = conn.Write([]byte(str))
 		if err != nil {
@@ -59,10 +59,39 @@ func (g *Client) SendData(data map[string]float64) error {
 	return conn.Close()
 }
 
-func (g *Client) prepareData(data map[string]float64) []string {
+// SendDataWithTimeStamp - creates new connection to Graphite server and pushes
+// provided batch of metrics in this single connection, thread-safe.
+//
+// Returns error in case of problems establishing, sending data or closing the connection
+// (which should not be a problem with such short-lived connections).
+//
+// SendData receives as first argument map[string]int64 where string is metric name,
+// float64 is metric value, example:
+//   map[string]float64{"test": 1234.1234, "test": 1234.1234}
+// and as a second argument Unix timestamp with which the metrics will be sent, example:
+// timeNow().Unix()
+func (g *Client) SendDataWithTimeStamp(data map[string]float64, timestamp int64) error {
+	conn, err := net.DialTimeout(g.protocol, g.host+":"+strconv.Itoa(g.port), g.timeOut)
+	if err != nil {
+		return err
+	}
+
+	dataToSent := g.prepareData(data, timestamp)
+	for _, str := range dataToSent {
+		_, err = conn.Write([]byte(str))
+		if err != nil {
+			return err
+		}
+	}
+	// it's safe to close connection here because
+	// we are not exiting the function elsewhere after connection is open
+	return conn.Close()
+}
+
+func (g *Client) prepareData(data map[string]float64, timestamp int64) []string {
 	dataToGraphite := make([]string, 0)
 	for metricName, metricVal := range data {
-		dataToGraphite = append(dataToGraphite, fmt.Sprintf("%s.%s %f %d\n", g.prefix, metricName, metricVal, timeNow().Unix()))
+		dataToGraphite = append(dataToGraphite, fmt.Sprintf("%s.%s %f %d\n", g.prefix, metricName, metricVal, timestamp))
 	}
 	return dataToGraphite
 }
