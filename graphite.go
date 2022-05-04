@@ -35,8 +35,7 @@ func NewClient(Host string, Port int, Prefix string, Protocol string) *Client {
 // SendData - creates new connection to Graphite server and pushes
 // provided batch of metrics in this single connection, thread-safe.
 //
-// Returns error in case of problems establishing or closing the connection
-// but no error in case of problems sending data trough the connection
+// Returns error in case of problems establishing, sending data or closing the connection
 // (which should not be a problem with such short-lived connections).
 //
 // SendData receives as argument map[string]int64 where string is metric name,
@@ -50,7 +49,10 @@ func (g *Client) SendData(data map[string]float64) error {
 
 	dataToSent := g.prepareData(data)
 	for _, str := range dataToSent {
-		_, _ = conn.Write([]byte(str))
+		_, err = conn.Write([]byte(str))
+		if err != nil {
+			return err
+		}
 	}
 	// it's safe to close connection here because
 	// we are not exiting the function elsewhere after connection is open
